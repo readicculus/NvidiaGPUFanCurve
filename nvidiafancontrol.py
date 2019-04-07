@@ -16,7 +16,8 @@ import os
 
 class FanControl():
     def __init__(self):
-        self.status = "NVIDIAX"
+        self.status = ["", ""]
+        self.short_status = "NVIDIA"
         pass
 
     def enable_fan_control(self, id):
@@ -24,6 +25,13 @@ class FanControl():
             "nvidia-settings",
             "-a",
             id + "/GPUFanControlState=1"
+        ])
+
+    def disable_fan_control(self, id):
+        check_output([
+            "nvidia-settings",
+            "-a",
+            id + "/GPUFanControlState=0"
         ])
 
     def get_core_temperature(self, id):
@@ -163,7 +171,7 @@ class FanControl():
 
         while True:
             # status = "V%.2f" % (driver) 
-            status = ["",""]    
+            short_status = ["",""]    
             output = {-1: [""]}
             for fan, control in config.fan_controls.items():
 
@@ -195,11 +203,12 @@ class FanControl():
                 output[gpu_id].append("\t" + mem)
                 output[gpu_id].append("\t%d -> %d" % (current_speed, target_speed))
                 output[gpu_id].append("\tTemp: %dC" % core_temp)
-                status[gpu_id] = "%s 🌡️%dC %d%% %dMiB" % (control[0], core_temp, current_speed, used)
+                self.status[gpu_id] = "%s 🌡️%dC %d%% %dMiB" % (control[0], core_temp, current_speed, used)
+                short_status[gpu_id] = "🌡️%dC" % (core_temp)
                 # status += " [:%d] %dC %d%%" % (gpu_id, core_temp, current_speed)
 
             self.process(output, driver)
-            self.status =  status[0] + "    " + status[1]
+            self.short_status = short_status[0] + " " + short_status[1] 
             sleep(config.interval)
 
 if __name__ == "__main__":

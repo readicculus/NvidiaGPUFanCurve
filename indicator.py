@@ -37,9 +37,9 @@ class Indicator():
 
         # img = Gtk.Image()
         # img.set_from_file(filename)
-        item_1 = Gtk.MenuItem()
-        # item_about.connect('activate', self.about)
-        menu.append(item_1)
+        for stat in self.fc.status:
+            item_1 = Gtk.MenuItem(stat)
+            menu.append(item_1)
         # separator
         menu_sep = Gtk.SeparatorMenuItem()
         menu.append(menu_sep)
@@ -57,11 +57,17 @@ class Indicator():
             time.sleep(1)
             GObject.idle_add(
                 self.indicator.set_label,
-                self.fc.status, self.app,
+                self.fc.short_status, self.app,
                 priority=GObject.PRIORITY_DEFAULT
                 )
-
+            menu = self.create_menu()
+            GObject.idle_add(
+                self.indicator.set_menu,
+                menu
+                )
     def stop(self, source):
+        self.fc.disable_fan_control("[gpu:0]")
+        self.fc.disable_fan_control("[gpu:1]")
         Gtk.main_quit()
 
 
